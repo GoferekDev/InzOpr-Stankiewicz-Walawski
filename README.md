@@ -26,7 +26,7 @@ płatność rozliczona.
 - Zakładanie konta w serwisie (MVP)
 - Panel do zarządzania zleceniami (MVP)
 - Formularz zgłoszeniowy (MVP)
-- Anulowanie zlecenia
+- Anulowanie zlecenia (MVP)
 - Ustawianie kosztu zlecenia
 - Akceptowanie/Odrzucanie kosztorysu
 - Płatność
