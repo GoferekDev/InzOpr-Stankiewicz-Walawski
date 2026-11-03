@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Status Zlecenia - Iris Solutions</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f9; }
+        .container { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .box { border: 1px solid #ccc; padding: 15px; margin: 15px 0; background: #fafafa; }
+        .error { color: red; margin-bottom: 15px; }
+        button.cancel { background: #dc3545; color: white; border: none; padding: 10px; cursor: pointer; width: 100%; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Wynik Wyszukiwania Statusu</h2>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+    <div class="box">
+        <p><strong>Zlecenie NR:</strong> {{ zlecenie.numer }}</p>
+        <p><strong>Urządzenie:</strong> {{ zlecenie.typ_sprzetu }} - {{ zlecenie.model }}</p>
+        <p><strong>Klient:</strong> {{ zlecenie.imie }} ({{ zlecenie.email }})</p>
+        <p><strong>Aktualny Status:</strong> <span style="color: #007bff; font-weight: bold;">{{ zlecenie.status }}</span></p>
+    </div>
+
+    {% if zlecenie.status == 'NEW' %}
+    <form method="POST">
+        <button type="submit" class="cancel">Anuluj Zamówienie</button>
+    </form>
+    {% elif zlecenie.status == 'DELIVERED' %}
+    <p style="color: gray;"><em>Sprzęt został dostarczony do serwisu. Anulowanie online nie jest już możliwe.</em></p>
+    {% elif zlecenie.status == 'CANCELLED' %}
+    <p style="color: red;"><em>To zlecenie zostało anulowane.</em></p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('w01_index') }}">Powrót do strony głównej</a>
+</div>
+</body>
+</html>

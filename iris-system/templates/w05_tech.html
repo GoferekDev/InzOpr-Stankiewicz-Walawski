@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Technika - Iris Solutions</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f9; }
+        .container { background: white; padding: 20px; border-radius: 8px; max-width: 800px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #333; color: white; }
+        .msg { background: #e2f0d9; padding: 10px; margin-bottom: 15px; border: 1px solid #c8e1b9; }
+        input, button { padding: 8px; margin: 5px 0; }
+        button { background: #17a2b8; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Panel Technika – Przyjęcie Sprzętu</h2>
+
+    {% if message %}<div class="msg">{{ message }}</div>{% endif %}
+
+    <form method="POST">
+        <label>Podaj ID / Numer zlecenia od klienta:</label><br>
+        <input type="text" name="numer" placeholder="np. IRIS-1234" required>
+        <button type="submit">Potwierdź przyjęcie sprzętu (Zmień na DELIVERED)</button>
+    </form>
+
+    <hr style="margin: 20px 0;">
+
+    <h3>Lista wszystkich zleceń w systemie:</h3>
+    <table>
+        <tr>
+            <th>Numer</th>
+            <th>Klient</th>
+            <th>Urządzenie</th>
+            <th>Status</th>
+        </tr>
+        {% for z in zlecenia %}
+        <tr>
+            <td>{{ z.numer }}</td>
+            <td>{{ z.imie }}</td>
+            <td>{{ z.typ_sprzetu }} - {{ z.model }}</td>
+            <td><strong>{{ z.status }}</strong></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <a href="{{ url_for('w01_index') }}">Powrót do strony głównej</a>
+</div>
+</body>
+</html>
