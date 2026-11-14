@@ -48,10 +48,10 @@ By uruchomić lokalnie aplikację wprowadź poniższą komendę do terminala:
 *(Z folderu "iris-system" w którym znajdują się pliki projektu.)*
 
 Windows:  
-`.venv\Scripts\python.exe -m flask --app app run`
+`.\.venv\Scripts\python.exe app.py`
 
 Linux/macOS:  
-`.venv/bin/python -m flask --app app run`
+`.venv/bin/python app.py`
 
 Następnie, wpisz w przeglądarce adres http://127.0.0.1:5000.
 
