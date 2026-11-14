@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagnoza i Kosztorys (W06) - Iris Solutions</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f9; }
+        .container { background: white; padding: 20px; border-radius: 8px; max-width: 700px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .box { border: 1px solid #ddd; padding: 15px; background: #fafafa; margin-bottom: 20px; border-radius: 5px; }
+        .error { color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+        .msg { background: #e2f0d9; padding: 10px; margin-bottom: 15px; border: 1px solid #c8e1b9; }
+        input, select, textarea, button { padding: 8px; margin: 5px 0 15px 0; width: 100%; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Panel Technika – Diagnoza i Kosztorys (W06)</h2>
+
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    {% if message %}<div class="msg">{{ message }}</div>{% endif %}
+
+    <div class="box">
+        <p><strong>Zlecenie:</strong> {{ zlecenie.numer }} | <strong>Status:</strong> {{ zlecenie.status }}</p>
+        <p><strong>Urządzenie:</strong> {{ zlecenie.typ_sprzetu }} - {{ zlecenie.model }}</p>
+        <p><strong>Klient:</strong> {{ zlecenie.imie }} {{ zlecenie.nazwisko or '' }}</p>
+        <p><strong>Opis usterki od klienta:</strong> {{ zlecenie.opis_problemu }}</p>
+    </div>
+
+    {% if kosztorys %}
+        <div class="box" style="border-color: #28a745; background: #f3fbf5;">
+            <h3>Zapisana Diagnoza i Kosztorys</h3>
+            {% if naprawa %}
+                <p><strong>Technik prowadzący:</strong> {{ naprawa.technik_imie }} {{ naprawa.technik_nazwisko }}</p>
+                <p><strong>Opis diagnozy:</strong> {{ naprawa.opis }}</p>
+                <p><strong>Szacowany czas naprawy:</strong> {{ naprawa.czas_naprawy }} godz.</p>
+            {% endif %}
+            <p><strong>Kwota kosztorysu:</strong> {{ "%.2f"|format(kosztorys.kwota) }} PLN</p>
+            <p><strong>Status akceptacji przez klienta:</strong> <strong>{{ kosztorys.status_akceptacji }}</strong></p>
+        </div>
+        <a href="{{ url_for('w07_czesci', numer=zlecenie.numer) }}"><button style="background: #6f42c1;">Przejdź do przypisania części (W07)</button></a>
+    {% elif zlecenie.status == 'DELIVERED' %}
+        <form method="POST">
+            <label>Technik wykonujący diagnozę:</label>
+            <select name="technik_id" required>
+                {% for t in technicy %}
+                    <option value="{{ t.id }}">{{ t.imie }} {{ t.nazwisko }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Opis diagnozy technicznej:</label>
+            <textarea name="opis" rows="4" placeholder="Wpisz wynik diagnozy oraz zakres prac naprawczych..." required></textarea>
+
+            <label>Szacowany czas naprawy (w godzinach):</label>
+            <input type="number" name="czas_naprawy" min="1" value="2" required>
+
+            <label>Kwota kosztorysu (PLN):</label>
+            <input type="number" name="kwota" step="0.01" min="0.01" placeholder="np. 250.00" required>
+
+            <button type="submit">Zapisz diagnozę i udostępnij kosztorys klientowi</button>
+        </form>
+    {% else %}
+        <p style="color: #721c24;">Nie można utworzyć kosztorysu dla zlecenia w stanie <strong>{{ zlecenie.status }}</strong>.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('w05_tech') }}">Powrót do Panelu Technika (W05)</a>
+</div>
+</body>
+</html>

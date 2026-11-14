@@ -2,13 +2,18 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Status Zlecenia - Iris Solutions</title>
+    <title>Status Zlecenia i Kosztorys - Iris Solutions</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f9; }
-        .container { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .box { border: 1px solid #ccc; padding: 15px; margin: 15px 0; background: #fafafa; }
-        .error { color: red; margin-bottom: 15px; }
-        button.cancel { background: #dc3545; color: white; border: none; padding: 10px; cursor: pointer; width: 100%; }
+        .container { background: white; padding: 20px; border-radius: 8px; max-width: 650px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .box { border: 1px solid #ccc; padding: 15px; margin: 15px 0; background: #fafafa; border-radius: 5px; }
+        .estimate-box { border: 2px solid #007bff; padding: 15px; margin: 15px 0; background: #f0f7ff; border-radius: 5px; }
+        .error { color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+        button { border: none; padding: 10px 15px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        button.cancel { background: #dc3545; color: white; width: 100%; }
+        button.accept { background: #28a745; color: white; width: 48%; }
+        button.reject { background: #dc3545; color: white; width: 48%; float: right; }
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.9em; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -19,18 +24,60 @@
     <div class="box">
         <p><strong>Zlecenie NR:</strong> {{ zlecenie.numer }}</p>
         <p><strong>Urządzenie:</strong> {{ zlecenie.typ_sprzetu }} - {{ zlecenie.model }}</p>
+        <p><strong>Zgłoszony problem:</strong> {{ zlecenie.opis_problemu }}</p>
         <p><strong>Klient:</strong> {{ zlecenie.imie }} ({{ zlecenie.email }})</p>
         <p><strong>Aktualny Status:</strong> <span style="color: #007bff; font-weight: bold;">{{ zlecenie.status }}</span></p>
     </div>
 
+    <!-- Sekcja Diagnozy i Kosztorysu (Cykl 2 - F06) -->
+    {% if kosztorys %}
+    <div class="estimate-box">
+        <h3>Wynik Diagnozy i Kosztorys Naprawy</h3>
+        {% if naprawa %}
+            <p><strong>Diagnoza technika ({{ naprawa.technik_imie }} {{ naprawa.technik_nazwisko }}):</strong><br>{{ naprawa.opis }}</p>
+            <p><strong>Szacowany czas realizacji:</strong> {{ naprawa.czas_naprawy }} godz.</p>
+        {% endif %}
+        <p style="font-size: 1.2em;"><strong>Kwota kosztorysu:</strong> {{ "%.2f"|format(kosztorys.kwota) }} PLN</p>
+        <p><strong>Status wyceny:</strong>
+            {% if kosztorys.status_akceptacji == 'OCZEKUJE' %}
+                <span class="badge" style="background: #ffc107; color: #000;">OCZEKUJE NA DECYZJĘ KLIENTA</span>
+            {% elif kosztorys.status_akceptacji == 'AKCEPTOWANY' %}
+                <span class="badge" style="background: #28a745; color: #fff;">AKCEPTOWANY</span>
+            {% elif kosztorys.status_akceptacji == 'ODRZUCONY' %}
+                <span class="badge" style="background: #dc3545; color: #fff;">ODRZUCONY</span>
+            {% endif %}
+        </p>
+
+        {% if zlecenie.status == 'IN_PROGRESS' and kosztorys.status_akceptacji == 'OCZEKUJE' %}
+            <hr>
+            <p>Prosimy o decyzję w sprawie realizacji naprawy zgodnie z powyższą wyceną:</p>
+            <form method="POST" onsubmit="return confirm('Czy na pewno chcesz zatwierdzić tę decyzję? Po jej podjęciu nie będzie można jej zmienić.');">
+                <button type="submit" name="akcja" value="akceptuj_kosztorys" class="accept">Akceptuj kosztorys</button>
+                <button type="submit" name="akcja" value="odrzuc_kosztorys" class="reject">Odrzuć kosztorys</button>
+                <div style="clear: both;"></div>
+            </form>
+        {% elif kosztorys.status_akceptacji == 'AKCEPTOWANY' %}
+            <p style="color: #155724;"><em>Kosztorys został zaakceptowany. Serwis realizuje naprawę.</em></p>
+        {% elif kosztorys.status_akceptacji == 'ODRZUCONY' %}
+            <p style="color: #721c24;"><em>Kosztorys został odrzucony. Naprawa została zaniechana, sprzęt jest gotowy do odbioru.</em></p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Anulowanie przed dostarczeniem sprzętu (Cykl 1 - F04) -->
     {% if zlecenie.status == 'NEW' %}
-    <form method="POST">
-        <button type="submit" class="cancel">Anuluj Zamówienie</button>
-    </form>
+        <form method="POST">
+            <input type="hidden" name="akcja" value="anuluj">
+            <button type="submit" class="cancel">Anuluj Zamówienie</button>
+        </form>
     {% elif zlecenie.status == 'DELIVERED' %}
-    <p style="color: gray;"><em>Sprzęt został dostarczony do serwisu. Anulowanie online nie jest już możliwe.</em></p>
+        <p style="color: gray;"><em>Sprzęt został dostarczony do serwisu i oczekuje na diagnozę technika.</em></p>
+    {% elif zlecenie.status == 'WAITING_FOR_PARTS' %}
+        <p style="color: #856404;"><em>Oczekiwanie na dostawę brakujących części z hurtowni.</em></p>
+    {% elif zlecenie.status == 'COMPLETED' %}
+        <p style="color: #155724;"><strong>Zlecenie zakończone. Sprzęt gotowy do odbioru w serwisie.</strong></p>
     {% elif zlecenie.status == 'CANCELLED' %}
-    <p style="color: red;"><em>To zlecenie zostało anulowane.</em></p>
+        <p style="color: red;"><em>To zlecenie zostało anulowane.</em></p>
     {% endif %}
 
     <br>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Części i Zamówienia (W07) - Iris Solutions</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f9; }
+        .container { background: white; padding: 20px; border-radius: 8px; max-width: 850px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .box { border: 1px solid #ddd; padding: 15px; background: #fafafa; margin-bottom: 20px; border-radius: 5px; }
+        .error { color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+        .msg { background: #e2f0d9; padding: 10px; margin-bottom: 15px; border: 1px solid #c8e1b9; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #333; color: white; }
+        input[type="number"], select { padding: 8px; margin: 5px 0 12px 0; width: 100%; box-sizing: border-box; }
+        button { padding: 8px 12px; background: #6f42c1; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .btn-small { padding: 5px 8px; font-size: 12px; }
+        .btn-warn { background: #e0a800; color: #000; }
+        .btn-ok { background: #28a745; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Panel Technika – Przypisanie i Zamówienie Części (W07)</h2>
+
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    {% if message %}<div class="msg">{{ message }}</div>{% endif %}
+
+    <div class="box">
+        <p><strong>Zlecenie:</strong> {{ zlecenie.numer }} | <strong>Aktualny status:</strong> <span style="color: #007bff; font-weight: bold;">{{ zlecenie.status }}</span></p>
+        <p><strong>Urządzenie:</strong> {{ urzadzenie }} | <strong>Klient:</strong> {{ klient }}</p>
+        <p><strong>Status kosztorysu:</strong>
+            {% if kosztorys %}
+                <strong>{{ kosztorys.status_akceptacji }}</strong> ({{ "%.2f"|format(kosztorys.kwota) }} PLN)
+            {% else %}
+                <span style="color: red;">Brak kosztorysu</span>
+            {% endif %}
+        </p>
+    </div>
+
+    {% if kosztorys and kosztorys.status_akceptacji == 'AKCEPTOWANY' and zlecenie.status not in ('COMPLETED', 'CANCELLED') %}
+        <h3>Dodaj część do naprawy</h3>
+        <form method="POST">
+            <input type="hidden" name="akcja" value="przypisz">
+
+            <label>Wybierz część z katalogu magazynowego:</label>
+            <select name="czesc_id" required>
+                {% for c in czesci_magazyn %}
+                    <option value="{{ c.id }}">
+                        {{ c.nazwa }} — {{ "%.2f"|format(c.cena) }} PLN (Stan magazynowy: {{ c.dostepnosc }} szt.)
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label>Ilość (szt.):</label>
+            <input type="number" name="ilosc" min="1" value="1" required>
+
+            <label style="display: block; margin-bottom: 15px; font-size: 13px; color: #555;">
+                <input type="checkbox" name="symuluj_blad_api" value="1">
+                Symuluj błąd komunikacji z zewnętrznym API hurtowni (test ścieżki błędnej F07)
+            </label>
+
+            <button type="submit">Przypisz część (lub zamów automatycznie z hurtowni)</button>
+        </form>
+    {% else %}
+        <p style="color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px;">
+            Przypisywanie i zamawianie części jest możliwe wyłącznie po zaakceptowaniu kosztorysu przez klienta (status: <strong>AKCEPTOWANY</strong>) i przed zakończeniem zlecenia.
+        </p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Części przypisane do zlecenia {{ zlecenie.numer }}:</h3>
+    {% if przypisane_czesci %}
+    <table>
+        <tr>
+            <th>Nazwa części</th>
+            <th>Ilość</th>
+            <th>Cena jedn.</th>
+            <th>Status zamówienia</th>
+            <th>Akcje</th>
+        </tr>
+        {% for pc in przypisane_czesci %}
+        <tr>
+            <td>{{ pc.nazwa }}</td>
+            <td>{{ pc.ilosc }} szt.</td>
+            <td>{{ "%.2f"|format(pc.cena) }} PLN</td>
+            <td><strong>{{ pc.status_zamowienia }}</strong></td>
+            <td>
+                {% if pc.status_zamowienia == 'OCZEKUJE_PONOWIENIA_API' %}
+                    <form method="POST" style="display: inline;">
+                        <input type="hidden" name="akcja" value="ponow_api">
+                        <input type="hidden" name="zc_id" value="{{ pc.id }}">
+                        <button type="submit" class="btn-small btn-warn">Ponów wysyłkę do API</button>
+                    </form>
+                {% elif pc.status_zamowienia == 'ZAMOWIONE_HURTOWNIA' %}
+                    <form method="POST" style="display: inline;">
+                        <input type="hidden" name="akcja" value="dostarczono_czesc">
+                        <input type="hidden" name="zc_id" value="{{ pc.id }}">
+                        <button type="submit" class="btn-small btn-ok">Potwierdź dostawę z hurtowni</button>
+                    </form>
+                {% else %}
+                    <span style="color: green;">Gotowe</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p style="color: gray;">Brak przypisanych części do tego zlecenia.</p>
+    {% endif %}
+
+    <a href="{{ url_for('w05_tech') }}">Powrót do Panelu Technika (W05)</a>
+</div>
+</body>
+</html>

@@ -5,23 +5,28 @@
     <title>Panel Technika - Iris Solutions</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f9; }
-        .container { background: white; padding: 20px; border-radius: 8px; max-width: 800px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .container { background: white; padding: 20px; border-radius: 8px; max-width: 1000px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
         th { background: #333; color: white; }
         .msg { background: #e2f0d9; padding: 10px; margin-bottom: 15px; border: 1px solid #c8e1b9; }
         input, button { padding: 8px; margin: 5px 0; }
-        button { background: #17a2b8; color: white; border: none; cursor: pointer; }
+        button { background: #17a2b8; color: white; border: none; cursor: pointer; border-radius: 3px; }
+        .btn-link { display: inline-block; padding: 5px 8px; text-decoration: none; color: white; border-radius: 3px; font-size: 12px; margin-right: 4px; }
+        .btn-diag { background: #007bff; }
+        .btn-parts { background: #6f42c1; }
+        .btn-done { background: #28a745; padding: 5px 8px; font-size: 12px; margin: 0; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>Panel Technika – Przyjęcie Sprzętu</h2>
+    <h2>Panel Technika – Zarządzanie Zleceniami</h2>
 
     {% if message %}<div class="msg">{{ message }}</div>{% endif %}
 
     <form method="POST">
-        <label>Podaj ID / Numer zlecenia od klienta:</label><br>
+        <input type="hidden" name="akcja" value="przyjmij">
+        <label>Podaj ID / Numer zlecenia od klienta (Przyjęcie sprzętu):</label><br>
         <input type="text" name="numer" placeholder="np. IRIS-1234" required>
         <button type="submit">Potwierdź przyjęcie sprzętu (Zmień na DELIVERED)</button>
     </form>
@@ -34,14 +39,39 @@
             <th>Numer</th>
             <th>Klient</th>
             <th>Urządzenie</th>
-            <th>Status</th>
+            <th>Status Zlecenia</th>
+            <th>Kosztorys</th>
+            <th>Akcje Technika (Cykl 2)</th>
         </tr>
         {% for z in zlecenia %}
         <tr>
-            <td>{{ z.numer }}</td>
-            <td>{{ z.imie }}</td>
+            <td><strong>{{ z.numer }}</strong></td>
+            <td>{{ z.imie }} {{ z.nazwisko or '' }}</td>
             <td>{{ z.typ_sprzetu }} - {{ z.model }}</td>
             <td><strong>{{ z.status }}</strong></td>
+            <td>
+                {% if z.kosztorys_kwota %}
+                    {{ "%.2f"|format(z.kosztorys_kwota) }} PLN ({{ z.kosztorys_status }})
+                {% else %}
+                    <span style="color: gray;">Brak</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if z.status != 'NEW' and z.status != 'CANCELLED' %}
+                    <a href="{{ url_for('w06_diagnoza', numer=z.numer) }}" class="btn-link btn-diag">Diagnoza / Kosztorys (W06)</a>
+                    <a href="{{ url_for('w07_czesci', numer=z.numer) }}" class="btn-link btn-parts">Części (W07)</a>
+                {% else %}
+                    <span style="color: gray; font-size: 12px;">Oczekuje na dostarczenie / anulowane</span>
+                {% endif %}
+
+                {% if z.status == 'IN_PROGRESS' and z.kosztorys_status == 'AKCEPTOWANY' %}
+                    <form method="POST" style="display: inline;">
+                        <input type="hidden" name="akcja" value="zakoncz">
+                        <input type="hidden" name="numer" value="{{ z.numer }}">
+                        <button type="submit" class="btn-done">Zakończ naprawę</button>
+                    </form>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>
