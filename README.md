@@ -3,6 +3,8 @@
 Iris to internetowa aplikacja do zarządzania zleceniami przeznaczona dla małych
 przedsiębiorstw w sektorze usługowym.
 
+## Podstawowe Informacje
+
 ### Zespół
 - Wiktor Stankiewicz, Nr Indeksu: 180639, Grupa: IO2, GitHub: GoferekDev
 - Mateusz Walawski, Nr Indeksu: 182747, Grupa: IO2, GitHub: mateuszw04
@@ -40,3 +42,18 @@ płatność rozliczona.
 ### Linki
 - Repozytorium GitHub: https://github.com/GoferekDev/InzOpr-Stankiewicz-Walawski
 - LaboChat: https://inzoprsw.labochat.com/
+
+## Instrukcja Uruchomienia
+By uruchomić lokalnie aplikację wprowadź poniższą komendę do terminala:  
+*(Z folderu "iris-system" w którym znajdują się pliki projektu.)*
+
+Windows:  
+`.venv\Scripts\python.exe -m flask --app app run`
+
+Linux/macOS:  
+`.venv/bin/python -m flask --app app run`
+
+Następnie, wpisz w przeglądarce adres http://127.0.0.1:5000.
+
+Uwaga!
+Uruchomienie wymaga zainstalowania używanych przez aplikację bibliotek. Ich lista znajduje się w pliku requirements.txt
