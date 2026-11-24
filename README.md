@@ -47,11 +47,20 @@ płatność rozliczona.
 By uruchomić lokalnie aplikację wprowadź poniższą komendę do terminala:  
 *(Z folderu "iris-system" w którym znajdują się pliki projektu.)*
 
-Windows:  
-`.\.venv\Scripts\python.exe app.py`
+Windows (powershell):  
+`python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt`
 
 Linux/macOS:  
-`.venv/bin/python app.py`
+`python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt`
+
+Uruchom Aplikacje:
+
+Windows (powershell): `.\.venv\Scripts\python.exe app.py`
+Linux/macOS: `.venv/bin/python app.py`
 
 Następnie, wpisz w przeglądarce adres http://127.0.0.1:5000.
 
