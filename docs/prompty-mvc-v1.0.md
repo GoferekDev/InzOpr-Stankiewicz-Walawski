@@ -65,3 +65,27 @@
   > Ustal przyczynę i zaproponuj najmniejszą poprawkę zachowującą podział MVC. Zwróć zmienione pliki, krótkie wyjaśnienie i scenariusze ponownego sprawdzenia tej funkcji oraz wcześniejszych funkcji. Odróżnij testy wykonane od proponowanych; potwierdzaj uruchomienie tylko wtedy, gdy rzeczywiście je wykonano.
 * **Rzeczywisty wynik i poprawka:**
   * *Poprawka w promptcie / kodzie:* Zdefiniowano bezwzględną ścieżkę pliku bazy danych względem położenia pliku `db.py` (`BASE_DIR = os.path.dirname(os.path.abspath(__file__))`, `DEFAULT_DB_PATH = os.path.join(BASE_DIR, "app.db")`), przeniesiono `init_db()` do funkcji fabrycznej `create_app()` w `app.py` oraz dodano pętlę gwarantującą unikalność losowanego numeru `IRIS-XXXX` w `models/zlecenie.py`.
+
+**Narzędzie / Data:** Gemini, 2026-11-24
+* **Treść promptu:**
+  > Sprawdź zgłoszoną niezgodność z MVP 1.0: panel technika jest dostepny dla użytkownika na stronie głównej za pośrednictwem linku.
+  > Aktualne pliki: app.py, db.py, models/zlecenie.py.
+  > Sposób uruchomienia i wersje narzędzi: uruchomienie z katalogu projektu lub innego katalogu, Python 3.x + Flask + sqlite3.
+  > Kroki odtworzenia: 1. Uruchom aplikację. 2. Kliknij na link "Przejdź do Panelu Technika (W05)"
+  > Oczekiwane działanie: wejście do panelu technika nie jest możliwe z poziomu strony głównej, a dostęp do samego panelu wymaga jakiegoś sposobu uwierzytelniania
+  > Faktyczny wynik i komunikat: każdy użytkownik ma dostęp do panelu technika
+  > Ustal przyczynę i zaproponuj najmniejszą poprawkę zachowującą podział MVC. Zwróć zmienione pliki, krótkie wyjaśnienie i scenariusze ponownego sprawdzenia tej funkcji oraz wcześniejszych funkcji. Odróżnij testy wykonane od proponowanych; potwierdzaj uruchomienie tylko wtedy, gdy rzeczywiście je wykonano.
+* **Rzeczywisty wynik i poprawka:**
+  * *Poprawka w promptcie / kodzie:* przeniesiono uwierzytelnianie technika do tabeli technik w SQLite (db.py, models/zlecenie.py, controllers/zlecenia.py, templates/w05_tech.html) przy jednoczesnym usunięciu bezpośredniego linku do W05 ze strony głównej w01_index.html (z hashowaniem)
+
+**Narzędzie / Data:** Gemini, 2026-11-24
+* **Treść promptu:**
+  > Sprawdź zgłoszoną niezgodność z MVP 1.0: panel statusu nie wyświetla wszystkich danych klienta
+  > Aktualne pliki: w04_status.html, models/zlecenie.py.
+  > Sposób uruchomienia i wersje narzędzi: uruchomienie z katalogu projektu lub innego katalogu, Python 3.x + Flask + sqlite3.
+  > Kroki odtworzenia: 1. wprowadź numer zlecenia 2. przejdź do panelu statusu
+  > Oczekiwane działanie: na panelu statusu znajdują się dane klienta
+  > Faktyczny wynik i komunikat: na panelu brakuje nazwiska i numeru telefonu klienta
+  > Ustal przyczynę i zaproponuj najmniejszą poprawkę zachowującą podział MVC. Zwróć zmienione pliki, krótkie wyjaśnienie i scenariusze ponownego sprawdzenia tej funkcji oraz wcześniejszych funkcji. Odróżnij testy wykonane od proponowanych; potwierdzaj uruchomienie tylko wtedy, gdy rzeczywiście je wykonano.
+* **Rzeczywisty wynik i poprawka:**
+  * *Poprawka w promptcie / kodzie:* Wprowadzono brakujące informacje do widoku W04. zmodyfikowano models/zlecenie, bo nie pobierało nazwiska ani telefonu klienta.

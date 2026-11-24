@@ -1,6 +1,7 @@
 import os
 import sqlite3
 from flask import g
+from werkzeug.security import generate_password_hash
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_DB_PATH = os.path.join(BASE_DIR, "app.db")
@@ -80,6 +81,13 @@ def init_db(db_path=DEFAULT_DB_PATH):
                 FOREIGN KEY (zlecenie_id) REFERENCES zlecenie(id)
             )
         """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS technik (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                login TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL
+            )
+        """)
 
         cursor.execute("SELECT COUNT(*) FROM kategoria_uslugi")
         if cursor.fetchone()[0] == 0:
@@ -90,6 +98,13 @@ def init_db(db_path=DEFAULT_DB_PATH):
                     (2, "Utrzymywanie urządzeń"),
                     (3, "Odzyskiwanie danych"),
                 ],
+            )
+
+        cursor.execute("SELECT COUNT(*) FROM technik")
+        if cursor.fetchone()[0] == 0:
+            cursor.execute(
+                "INSERT INTO technik (login, password_hash) VALUES (?, ?)",
+                ("technik", generate_password_hash("iris-tech-123")),
             )
 
         conn.commit()

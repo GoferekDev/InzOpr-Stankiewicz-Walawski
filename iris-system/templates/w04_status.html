@@ -19,7 +19,8 @@
     <div class="box">
         <p><strong>Zlecenie NR:</strong> {{ zlecenie.numer }}</p>
         <p><strong>Urządzenie:</strong> {{ zlecenie.typ_sprzetu }} - {{ zlecenie.model }}</p>
-        <p><strong>Klient:</strong> {{ zlecenie.imie }} ({{ zlecenie.email }})</p>
+        <p><strong>Klient:</strong> {{ zlecenie.imie }}{% if zlecenie.nazwisko %} {{ zlecenie.nazwisko }}{% endif %} ({{ zlecenie.email }})</p>
+        <p><strong>Telefon:</strong> {{ zlecenie.telefon if zlecenie.telefon else "brak" }}</p>
         <p><strong>Aktualny Status:</strong> <span style="color: #007bff; font-weight: bold;">{{ zlecenie.status }}</span></p>
     </div>
 

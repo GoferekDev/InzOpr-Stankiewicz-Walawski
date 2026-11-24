@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, session
 from models.zlecenie import (
+    weryfikuj_technika,
     pobierz_zlecenie_po_numerze,
     pobierz_szczegoly_zlecenia,
     utworz_zlecenie,
@@ -54,9 +55,32 @@ def w04_status(numer):
 @zlecenia_bp.route("/panel-technika", methods=["GET", "POST"])
 def w05_tech():
     message = None
+    error = None
+
+    if request.method == "POST" and request.form.get("akcja") == "login":
+        login = request.form.get("login", "")
+        haslo = request.form.get("haslo", "")
+        if weryfikuj_technika(login, haslo):
+            session["technik_zalogowany"] = True
+            return redirect(url_for("zlecenia.w05_tech"))
+        error = "Nieprawidłowy login lub hasło technika."
+
+    if request.method == "POST" and request.form.get("akcja") == "wyloguj":
+        session.pop("technik_zalogowany", None)
+        return redirect(url_for("zlecenia.w01_index"))
+
+    if not session.get("technik_zalogowany"):
+        return render_template("w05_tech.html", wymagane_logowanie=True, error=error, zlecenia=[])
+
     if request.method == "POST":
         numer = request.form.get("numer", "").strip()
         _, message = przyjmij_sprzet(numer)
 
     zlecenia = pobierz_wszystkie_zlecenia()
-    return render_template("w05_tech.html", zlecenia=zlecenia, message=message)
+    return render_template(
+        "w05_tech.html",
+        wymagane_logowanie=False,
+        zlecenia=zlecenia,
+        message=message,
+        error=error,
+    )

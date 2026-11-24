@@ -1,6 +1,7 @@
 from flask import Flask
 from db import close_connection, init_db
 from controllers.zlecenia import zlecenia_bp
+import os
 
 
 def create_app():
@@ -8,7 +9,8 @@ def create_app():
     app = Flask(__name__)
     app.teardown_appcontext(close_connection)
     app.register_blueprint(zlecenia_bp)
-
+    app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-iris-mvc")
+    app.config["TECH_ACCESS_CODE"] = os.environ.get("TECH_ACCESS_CODE", "iris-tech-123")
     # Aliasy endpointów dla zgodności z url_for('w01_index') itd. w szablonach
     for name in ("w01_index", "w02_form", "w03_success", "w04_status", "w05_tech"):
         app.add_url_rule(

@@ -1,6 +1,25 @@
 import random
 import string
+from werkzeug.security import check_password_hash
 from db import get_db
+
+
+def weryfikuj_technika(login, haslo):
+    login_clean = (login or "").strip()
+    if not login_clean or not haslo:
+        return False
+
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        "SELECT id, login, password_hash FROM technik WHERE login = ?",
+        (login_clean,),
+    )
+    technik = cursor.fetchone()
+    if not technik:
+        return False
+
+    return check_password_hash(technik["password_hash"], haslo)
 
 
 def _generuj_numer_zlecenia(cursor):
@@ -22,7 +41,7 @@ def pobierz_szczegoly_zlecenia(numer):
     db = get_db()
     cursor = db.cursor()
     cursor.execute("""
-        SELECT z.*, u.typ_sprzetu, u.model, k.imie, k.email
+        SELECT z.*, u.typ_sprzetu, u.model, k.imie, k.email, k.nazwisko, k.telefon
         FROM zlecenie z
         JOIN urzadzenie u ON z.urzadzenie_id = u.id
         JOIN formularz_zgloszenia f ON z.formularz_id = f.id
